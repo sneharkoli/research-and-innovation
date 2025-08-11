@@ -6,8 +6,14 @@ const TodoForm = ({ onAdd }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Validate that title is not empty after trimming whitespace
+        if (title.trim() === '') {
+            return;
+        }
+        
         axios.post('http://localhost:8000/api/todos/', {
-            title: title,
+            title: title.trim(),
             description: '',
             completed: false
         })
@@ -29,5 +35,6 @@ const TodoForm = ({ onAdd }) => {
 };
 
 export default TodoForm;
+
 
 
