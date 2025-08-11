@@ -28,3 +28,6 @@ const TodoForm = ({ onAdd }) => {
     );
 };
 
+export default TodoForm;
+
+
