@@ -6,3 +6,5 @@ router = DefaultRouter()
 router.register(r'todos', TodoViewSet)
 
 urlpatterns = [
+    path('', include(router.urls)),
+]
