@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Health Feedback Dashboard - Visualize health data trends and demographic statistics">
+    <title>Health Feedback Dashboard</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <header role="banner">
+        <div class="container">
+            <h1>Health Feedback Dashboard</h1>
+            <p class="subtitle">Demographic trends and health statistics visualization</p>
+        </div>
+    </header>
+
+    <main role="main">
+        <div class="container">
+            <!-- Dashboard Controls -->
+            <div class="dashboard-controls">
+                <div class="controls-section">
+                    <h2>Dashboard Controls</h2>
+                    <div class="control-group">
+                        <div class="filter-controls">
+                            <div class="filter-item">
+                                <label for="age-filter">Filter by Age Group:</label>
+                                <select id="age-filter" name="ageFilter">
+                                    <option value="">All Age Groups</option>
+                                    <option value="18-24">18-24 years</option>
+                                    <option value="25-34">25-34 years</option>
+                                    <option value="35-44">35-44 years</option>
+                                    <option value="45-54">45-54 years</option>
+                                    <option value="55-64">55-64 years</option>
+                                    <option value="65+">65+ years</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-item">
+                                <label for="gender-filter">Filter by Gender:</label>
+                                <select id="gender-filter" name="genderFilter">
+                                    <option value="">All Genders</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                    <option value="prefer-not-to-say">Prefer not to say</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-item">
+                                <label for="location-filter">Filter by Location:</label>
+                                <select id="location-filter" name="locationFilter">
+                                    <option value="">All Locations</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="action-controls">
+                            <button type="button" id="refresh-data" class="btn btn-primary">
+                                <span class="btn-text">Refresh Data</span>
+                            </button>
+                            <button type="button" id="export-data" class="btn btn-secondary">
+                                <span class="btn-text">Export Data</span>
+                            </button>
+                            <button type="button" id="clear-data" class="btn btn-secondary">
+                                <span class="btn-text">Clear All Data</span>
+                            </button>
+                            <a href="index.html" class="btn btn-link">Back to Form</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="summary-stats">
+                <h2>Summary Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-submissions">0</div>
+                        <div class="stat-label">Total Submissions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="average-health-score">0</div>
+                        <div class="stat-label">Average Health Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="healthy-percentage">0%</div>
+                        <div class="stat-label">Healthy Classifications</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="last-updated">Never</div>
+                        <div class="stat-label">Last Updated</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <h2>Health Data Visualizations</h2>
+                
+                <!-- Demographics Charts -->
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <h3>Age Group Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="age-distribution-chart" aria-label="Age group distribution chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Distribution of survey participants by age group
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Gender Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="gender-distribution-chart" aria-label="Gender distribution chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Distribution of survey participants by gender
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Classification Charts -->
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <h3>Health Classifications</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="health-classification-chart" aria-label="Health classification chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Distribution of health classifications (healthy, moderate, abnormal)
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Health Scores by Age Group</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="health-scores-age-chart" aria-label="Health scores by age group chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Average health scores across different age groups
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lifestyle Analysis Charts -->
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <h3>Physical Activity Levels</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="physical-activity-chart" aria-label="Physical activity levels chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Distribution of physical activity levels among participants
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Sleep Patterns</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="sleep-patterns-chart" aria-label="Sleep patterns chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Distribution of sleep hours among participants
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Factors and Medical Conditions -->
+                <div class="chart-row">
+                    <div class="chart-container full-width">
+                        <h3>Common Risk Factors</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="risk-factors-chart" aria-label="Common risk factors chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Most common risk factors identified in the survey responses
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location-based Analysis -->
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <h3>Health Scores by Location</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="health-scores-location-chart" aria-label="Health scores by location chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Average health scores by geographic location
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Submissions Over Time</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="submissions-timeline-chart" aria-label="Submissions over time chart"></canvas>
+                        </div>
+                        <div class="chart-description">
+                            Timeline of survey submissions
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table Section -->
+            <div class="data-table-section">
+                <h2>Detailed Data View</h2>
+                <div class="table-controls">
+                    <div class="table-info">
+                        <span id="table-showing">Showing 0 of 0 entries</span>
+                    </div>
+                    <div class="table-pagination">
+                        <button type="button" id="prev-page" class="btn btn-secondary" disabled>Previous</button>
+                        <span id="page-info">Page 1 of 1</span>
+                        <button type="button" id="next-page" class="btn btn-secondary" disabled>Next</button>
+                    </div>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table id="data-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Age Group</th>
+                                <th>Gender</th>
+                                <th>Location</th>
+                                <th>Health Score</th>
+                                <th>Classification</th>
+                                <th>Risk Factors</th>
+                            </tr>
+                        </thead>
+                        <tbody id="data-table-body">
+                            <!-- Data will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- No Data Message -->
+            <div id="no-data-message" class="no-data-message" style="display: none;">
+                <div class="no-data-content">
+                    <h3>No Data Available</h3>
+                    <p>There are currently no health feedback submissions to display.</p>
+                    <p>
+                        <a href="index.html" class="btn btn-primary">Submit Health Information</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; 2024 Health Feedback Dashboard. Data visualization for health trend analysis.</p>
+            <p>
+                <a href="index.html" class="footer-link">Submit Form</a> | 
+                <a href="#about-data" class="footer-link">About This Data</a> | 
+                <a href="#methodology" class="footer-link">Methodology</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- About Data Modal -->
+    <div id="about-data" class="modal" role="dialog" aria-labelledby="about-data-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="about-data-title">About This Data</h3>
+                <button type="button" class="modal-close" aria-label="Close about data information">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>This dashboard displays aggregated health information collected through anonymous surveys.</p>
+                <ul>
+                    <li>All data is stored locally in your browser</li>
+                    <li>No personally identifiable information is collected</li>
+                    <li>Health classifications are based on lifestyle factors and self-reported conditions</li>
+                    <li>Data is updated in real-time as new submissions are received</li>
+                </ul>
+                <p>Use the filters above to explore specific demographic segments and health trends.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Methodology Modal -->
+    <div id="methodology" class="modal" role="dialog" aria-labelledby="methodology-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="methodology-title">Health Classification Methodology</h3>
+                <button type="button" class="modal-close" aria-label="Close methodology information">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>Health Score Calculation</h4>
+                <p>Health scores (0-100) are calculated based on:</p>
+                <ul>
+                    <li>Physical activity level (0-20 points)</li>
+                    <li>Sleep patterns (0-15 points)</li>
+                    <li>Smoking status (0-10 points)</li>
+                    <li>Alcohol consumption (0-5 points)</li>
+                    <li>Overall health rating (0-20 points)</li>
+                    <li>Medical conditions (-10 points per condition)</li>
+                </ul>
+                
+                <h4>Health Classifications</h4>
+                <ul>
+                    <li><strong>Healthy:</strong> Positive lifestyle factors outweigh risk factors</li>
+                    <li><strong>Moderate:</strong> Balanced mix of healthy and risk factors</li>
+                    <li><strong>Abnormal:</strong> Risk factors outweigh positive lifestyle factors</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+</body>
+</html>
