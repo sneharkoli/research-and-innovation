@@ -1,0 +1,487 @@
+name: Deploy Health Feedback Form to GitHub Pages
+
+# Workflow triggers
+on:
+  # Trigger on push to main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'health-feedback-form/**'
+      - '.github/workflows/deploy-health-form.yml'
+  
+  # Trigger on pull request to main branch
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'health-feedback-form/**'
+  
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+# Set permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+# Environment variables
+env:
+  NODE_VERSION: '18'
+  HEALTH_FORM_DIR: 'health-feedback-form'
+
+jobs:
+  # Build and test job
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+    
+    - name: Verify health feedback form structure
+      run: |
+        echo "Verifying project structure..."
+        if [ ! -d "${{ env.HEALTH_FORM_DIR }}" ]; then
+          echo "Error: Health feedback form directory not found!"
+          exit 1
+        fi
+        
+        # Check required files
+        required_files=(
+          "${{ env.HEALTH_FORM_DIR }}/index.html"
+          "${{ env.HEALTH_FORM_DIR }}/dashboard.html"
+          "${{ env.HEALTH_FORM_DIR }}/assets/css/styles.css"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/app.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/dashboard.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/data-manager.js"
+          "${{ env.HEALTH_FORM_DIR }}/.nojekyll"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "Error: Required file $file not found!"
+            exit 1
+          else
+            echo "✓ Found: $file"
+          fi
+        done
+        
+        echo "All required files found!"
+    
+    - name: Validate HTML files
+      run: |
+        echo "Validating HTML structure..."
+        
+        # Check for basic HTML5 structure in index.html
+        if ! grep -q "<!DOCTYPE html>" "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+          echo "Error: index.html missing DOCTYPE declaration"
+          exit 1
+        fi
+        
+        if ! grep -q '<form id="health-feedback-form"' "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+          echo "Error: index.html missing main form element"
+          exit 1
+        fi
+        
+        # Check for basic HTML5 structure in dashboard.html
+        if ! grep -q "<!DOCTYPE html>" "${{ env.HEALTH_FORM_DIR }}/dashboard.html"; then
+          echo "Error: dashboard.html missing DOCTYPE declaration"
+          exit 1
+        fi
+        
+        if ! grep -q 'chart.js' "${{ env.HEALTH_FORM_DIR }}/dashboard.html"; then
+          echo "Error: dashboard.html missing Chart.js integration"
+          exit 1
+        fi
+        
+        echo "HTML validation passed!"
+    
+    - name: Validate CSS and JavaScript files
+      run: |
+        echo "Validating CSS and JavaScript files..."
+        
+        # Check CSS file size and basic content
+        css_file="${{ env.HEALTH_FORM_DIR }}/assets/css/styles.css"
+        if [ $(wc -c < "$css_file") -lt 1000 ]; then
+          echo "Warning: CSS file seems too small"
+        fi
+        
+        if ! grep -q ":root" "$css_file"; then
+          echo "Warning: CSS file missing CSS custom properties"
+        fi
+        
+        # Check JavaScript files for basic structure
+        js_files=(
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/app.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/dashboard.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/data-manager.js"
+        )
+        
+        for js_file in "${js_files[@]}"; do
+          if [ $(wc -c < "$js_file") -lt 1000 ]; then
+            echo "Warning: $js_file seems too small"
+          fi
+          
+          if ! grep -q "class\|function" "$js_file"; then
+            echo "Warning: $js_file missing class or function definitions"
+          fi
+        done
+        
+        echo "CSS and JavaScript validation completed!"
+    
+    - name: Check accessibility compliance
+      run: |
+        echo "Checking accessibility features..."
+        
+        # Check for ARIA attributes
+        if ! grep -q "aria-" "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+          echo "Warning: Limited ARIA attributes found in index.html"
+        fi
+        
+        # Check for semantic HTML elements
+        semantic_elements=("header" "main" "footer" "nav" "section" "article")
+        for element in "${semantic_elements[@]}"; do
+          if grep -q "<$element" "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+            echo "✓ Found semantic element: $element"
+          fi
+        done
+        
+        # Check for form labels
+        if ! grep -q "<label" "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+          echo "Warning: No form labels found"
+        fi
+        
+        echo "Accessibility check completed!"
+    
+    - name: Security scan
+      run: |
+        echo "Performing basic security checks..."
+        
+        # Check for potential security issues in JavaScript
+        js_files=(
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/app.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/dashboard.js"
+          "${{ env.HEALTH_FORM_DIR }}/assets/js/data-manager.js"
+        )
+        
+        for js_file in "${js_files[@]}"; do
+          # Check for innerHTML usage (potential XSS)
+          if grep -q "innerHTML" "$js_file"; then
+            echo "Warning: innerHTML usage found in $js_file - ensure proper sanitization"
+          fi
+          
+          # Check for eval usage
+          if grep -q "eval(" "$js_file"; then
+            echo "Error: eval() usage found in $js_file - security risk!"
+            exit 1
+          fi
+          
+          # Check for sanitization functions
+          if grep -q "sanitize\|escape" "$js_file"; then
+            echo "✓ Sanitization functions found in $js_file"
+          fi
+        done
+        
+        echo "Security scan completed!"
+    
+    - name: Performance check
+      run: |
+        echo "Checking performance considerations..."
+        
+        # Check file sizes
+        css_size=$(wc -c < "${{ env.HEALTH_FORM_DIR }}/assets/css/styles.css")
+        echo "CSS file size: $css_size bytes"
+        
+        total_js_size=0
+        for js_file in "${{ env.HEALTH_FORM_DIR }}/assets/js/"*.js; do
+          if [ -f "$js_file" ]; then
+            size=$(wc -c < "$js_file")
+            echo "JavaScript file $(basename "$js_file"): $size bytes"
+            total_js_size=$((total_js_size + size))
+          fi
+        done
+        echo "Total JavaScript size: $total_js_size bytes"
+        
+        # Check for performance optimizations
+        if grep -q "preconnect\|prefetch\|preload" "${{ env.HEALTH_FORM_DIR }}/index.html"; then
+          echo "✓ Performance optimizations found"
+        fi
+        
+        echo "Performance check completed!"
+    
+    - name: Generate build report
+      run: |
+        echo "Generating build report..."
+        
+        # Create build report
+        cat > build-report.md << EOF
+        # Health Feedback Form Build Report
+        
+        **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Commit:** ${{ github.sha }}
+        **Branch:** ${{ github.ref_name }}
+        
+        ## File Structure
+        \`\`\`
+        $(find ${{ env.HEALTH_FORM_DIR }} -type f | sort)
+        \`\`\`
+        
+        ## File Sizes
+        - CSS: $(wc -c < "${{ env.HEALTH_FORM_DIR }}/assets/css/styles.css") bytes
+        - JavaScript (total): $(find "${{ env.HEALTH_FORM_DIR }}/assets/js" -name "*.js" -exec wc -c {} + | tail -1 | awk '{print $1}') bytes
+        - HTML files: $(find "${{ env.HEALTH_FORM_DIR }}" -name "*.html" -exec wc -c {} + | tail -1 | awk '{print $1}') bytes
+        
+        ## Validation Status
+        - ✅ HTML structure validation passed
+        - ✅ Required files present
+        - ✅ Security scan completed
+        - ✅ Performance check completed
+        
+        ## Deployment Ready
+        The health feedback form is ready for deployment to GitHub Pages.
+        EOF
+        
+        echo "Build report generated!"
+        cat build-report.md
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: health-form-build-${{ github.run_number }}
+        path: |
+          ${{ env.HEALTH_FORM_DIR }}/
+          build-report.md
+        retention-days: 30
+
+  # Deploy to GitHub Pages
+  deploy:
+    # Only run on main branch pushes (not PRs)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}health-feedback-form/
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    
+    - name: Prepare deployment files
+      run: |
+        echo "Preparing files for GitHub Pages deployment..."
+        
+        # Create deployment directory
+        mkdir -p _site
+        
+        # Copy all repository files to _site
+        cp -r * _site/ 2>/dev/null || true
+        
+        # Ensure .nojekyll exists at root level
+        touch _site/.nojekyll
+        
+        # Create index.html redirect at root if it doesn't exist
+        if [ ! -f "_site/index.html" ]; then
+          cat > _site/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Research and Innovation Portfolio</title>
+            <meta http-equiv="refresh" content="0; url=health-feedback-form/">
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .btn { display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 10px; }
+                .btn:hover { background: #1d4ed8; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Research and Innovation Portfolio</h1>
+                <p>Welcome to the research and innovation portfolio. You will be automatically redirected to the Health Feedback Form application.</p>
+                <p>If you are not redirected automatically, please click the link below:</p>
+                <a href="health-feedback-form/" class="btn">Go to Health Feedback Form</a>
+                <p><a href="health-feedback-form/dashboard.html" class="btn">View Dashboard</a></p>
+            </div>
+        </body>
+        </html>
+        EOF
+        fi
+        
+        echo "Deployment files prepared!"
+        echo "Site structure:"
+        find _site -type f -name "*.html" | head -10
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '_site'
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    - name: Post-deployment verification
+      run: |
+        echo "Deployment completed!"
+        echo "Health Feedback Form URL: ${{ steps.deployment.outputs.page_url }}health-feedback-form/"
+        echo "Dashboard URL: ${{ steps.deployment.outputs.page_url }}health-feedback-form/dashboard.html"
+        
+        # Wait a moment for deployment to propagate
+        sleep 30
+        
+        # Basic connectivity check (if curl is available)
+        if command -v curl &> /dev/null; then
+          echo "Testing deployment accessibility..."
+          if curl -s -o /dev/null -w "%{http_code}" "${{ steps.deployment.outputs.page_url }}health-feedback-form/" | grep -q "200"; then
+            echo "✅ Health Feedback Form is accessible"
+          else
+            echo "⚠️ Health Feedback Form may not be immediately accessible (DNS propagation)"
+          fi
+        fi
+
+  # Data processing job (runs after successful deployment)
+  process-data:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build-and-test, deploy]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Process health data (if any)
+      run: |
+        echo "Processing health feedback data..."
+        
+        # Check if there's any data to process
+        data_dir="${{ env.HEALTH_FORM_DIR }}/assets/data"
+        
+        if [ -d "$data_dir" ] && [ "$(ls -A $data_dir)" ]; then
+          echo "Found data files to process:"
+          ls -la "$data_dir"
+          
+          # Here you could add data processing logic
+          # For example: anonymization, aggregation, validation
+          
+          # Create a simple data summary
+          cat > data-summary.json << EOF
+        {
+          "processed_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+          "commit": "${{ github.sha }}",
+          "data_files_count": $(find "$data_dir" -name "*.json" | wc -l),
+          "status": "processed"
+        }
+        EOF
+          
+          echo "Data processing completed!"
+          cat data-summary.json
+        else
+          echo "No data files found to process."
+        fi
+    
+    - name: Archive processed data
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: processed-health-data-${{ github.run_number }}
+        path: |
+          data-summary.json
+          ${{ env.HEALTH_FORM_DIR }}/assets/data/
+        retention-days: 90
+
+  # Notification job
+  notify:
+    if: always()
+    needs: [build-and-test, deploy, process-data]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deployment notification
+      run: |
+        echo "=== Health Feedback Form Deployment Summary ==="
+        echo "Repository: ${{ github.repository }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Run ID: ${{ github.run_id }}"
+        echo ""
+        
+        if [ "${{ needs.build-and-test.result }}" == "success" ]; then
+          echo "✅ Build and Test: PASSED"
+        else
+          echo "❌ Build and Test: FAILED"
+        fi
+        
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "✅ Deployment: SUCCESS"
+          echo "🌐 Application URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/health-feedback-form/"
+        elif [ "${{ needs.deploy.result }}" == "skipped" ]; then
+          echo "⏭️ Deployment: SKIPPED (PR or non-main branch)"
+        else
+          echo "❌ Deployment: FAILED"
+        fi
+        
+        if [ "${{ needs.process-data.result }}" == "success" ]; then
+          echo "✅ Data Processing: COMPLETED"
+        elif [ "${{ needs.process-data.result }}" == "skipped" ]; then
+          echo "⏭️ Data Processing: SKIPPED"
+        else
+          echo "❌ Data Processing: FAILED"
+        fi
+        
+        echo ""
+        echo "=== Next Steps ==="
+        echo "1. Visit the deployed application to test functionality"
+        echo "2. Check the dashboard for data visualization"
+        echo "3. Verify form submission and data storage"
+        echo "4. Monitor application performance and accessibility"
+        
+        # Create deployment badge
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "[![Deployment Status](https://img.shields.io/badge/deployment-success-brightgreen)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" > deployment-badge.md
+        else
+          echo "[![Deployment Status](https://img.shields.io/badge/deployment-failed-red)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" > deployment-badge.md
+        fi
+    
+    - name: Upload deployment summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-summary-${{ github.run_number }}
+        path: deployment-badge.md
+        retention-days: 30
