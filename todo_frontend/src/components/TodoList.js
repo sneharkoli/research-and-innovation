@@ -1,18 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
 
-const TodoList = () => {
-    const [todos, setTodos] = useState([]);
-
-    useEffect(() => {
-        axios.get('http://localhost:8000/api/todos/')
-            .then(response => {
-                setTodos(response.data);
-            })
-            .catch(error => {
-                console.error('There was an error fetching the todos!', error);
-            });
-    }, []);
+const TodoList = ({ todos }) => {
 
     return (
         <div>
@@ -27,3 +15,4 @@ const TodoList = () => {
 };
 
 export default TodoList;
+
