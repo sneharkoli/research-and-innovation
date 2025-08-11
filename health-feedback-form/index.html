@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Health Feedback Form - Collect and analyze general health data for demographic trends">
+    <title>Health Feedback Form</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header role="banner">
+        <div class="container">
+            <h1>Health Feedback Form</h1>
+            <p class="subtitle">Help us understand health trends in your community</p>
+        </div>
+    </header>
+
+    <main role="main">
+        <div class="container">
+            <div class="form-wrapper">
+                <form id="health-feedback-form" novalidate aria-labelledby="form-title">
+                    <h2 id="form-title">General Health Information</h2>
+                    <p class="form-description">
+                        This anonymous survey collects general health information to help identify demographic trends. 
+                        Your responses are confidential and will be used for statistical analysis only.
+                    </p>
+
+                    <!-- Demographics Section -->
+                    <fieldset class="form-section">
+                        <legend>Demographics</legend>
+                        
+                        <div class="form-group">
+                            <label for="age-group" class="required">Age Group</label>
+                            <select id="age-group" name="ageGroup" required aria-describedby="age-group-error">
+                                <option value="">Select your age group</option>
+                                <option value="18-24">18-24 years</option>
+                                <option value="25-34">25-34 years</option>
+                                <option value="35-44">35-44 years</option>
+                                <option value="45-54">45-54 years</option>
+                                <option value="55-64">55-64 years</option>
+                                <option value="65+">65+ years</option>
+                            </select>
+                            <div id="age-group-error" class="error-message" role="alert" aria-live="polite"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <fieldset class="radio-group">
+                                <legend class="required">Gender</legend>
+                                <div class="radio-options">
+                                    <div class="radio-option">
+                                        <input type="radio" id="gender-male" name="gender" value="male" required>
+                                        <label for="gender-male">Male</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="gender-female" name="gender" value="female" required>
+                                        <label for="gender-female">Female</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="gender-other" name="gender" value="other" required>
+                                        <label for="gender-other">Other</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="gender-prefer-not" name="gender" value="prefer-not-to-say" required>
+                                        <label for="gender-prefer-not">Prefer not to say</label>
+                                    </div>
+                                </div>
+                                <div id="gender-error" class="error-message" role="alert" aria-live="polite"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location" class="required">Location (City/State or Region)</label>
+                            <input type="text" id="location" name="location" required 
+                                   placeholder="e.g., New York, NY or London, UK"
+                                   aria-describedby="location-help location-error"
+                                   maxlength="100">
+                            <div id="location-help" class="help-text">Enter your general location for demographic analysis</div>
+                            <div id="location-error" class="error-message" role="alert" aria-live="polite"></div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Lifestyle Section -->
+                    <fieldset class="form-section">
+                        <legend>Lifestyle & Habits</legend>
+
+                        <div class="form-group">
+                            <label for="physical-activity" class="required">Physical Activity Level</label>
+                            <select id="physical-activity" name="physicalActivity" required aria-describedby="physical-activity-error">
+                                <option value="">Select your activity level</option>
+                                <option value="sedentary">Sedentary (little to no exercise)</option>
+                                <option value="light">Light (1-3 days per week)</option>
+                                <option value="moderate">Moderate (3-5 days per week)</option>
+                                <option value="active">Active (6-7 days per week)</option>
+                                <option value="very-active">Very Active (intense daily exercise)</option>
+                            </select>
+                            <div id="physical-activity-error" class="error-message" role="alert" aria-live="polite"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="diet-habits" class="required">Diet Habits</label>
+                            <select id="diet-habits" name="dietHabits" required aria-describedby="diet-habits-error">
+                                <option value="">Select your diet type</option>
+                                <option value="balanced">Balanced (variety of foods)</option>
+                                <option value="vegetarian">Vegetarian</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="keto">Ketogenic</option>
+                                <option value="mediterranean">Mediterranean</option>
+                                <option value="fast-food">Mostly fast food/processed</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div id="diet-habits-error" class="error-message" role="alert" aria-live="polite"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sleep-hours" class="required">Average Sleep Hours per Night</label>
+                            <select id="sleep-hours" name="sleepHours" required aria-describedby="sleep-hours-error">
+                                <option value="">Select sleep duration</option>
+                                <option value="less-than-5">Less than 5 hours</option>
+                                <option value="5-6">5-6 hours</option>
+                                <option value="7-8">7-8 hours</option>
+                                <option value="9-10">9-10 hours</option>
+                                <option value="more-than-10">More than 10 hours</option>
+                            </select>
+                            <div id="sleep-hours-error" class="error-message" role="alert" aria-live="polite"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <fieldset class="radio-group">
+                                <legend class="required">Do you smoke?</legend>
+                                <div class="radio-options">
+                                    <div class="radio-option">
+                                        <input type="radio" id="smoking-never" name="smoking" value="never" required>
+                                        <label for="smoking-never">Never</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="smoking-former" name="smoking" value="former" required>
+                                        <label for="smoking-former">Former smoker</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="smoking-occasional" name="smoking" value="occasional" required>
+                                        <label for="smoking-occasional">Occasional</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="smoking-regular" name="smoking" value="regular" required>
+                                        <label for="smoking-regular">Regular smoker</label>
+                                    </div>
+                                </div>
+                                <div id="smoking-error" class="error-message" role="alert" aria-live="polite"></div>
+                            </fieldset>
+                        </div>
+
+                        <div class="form-group">
+                            <fieldset class="radio-group">
+                                <legend class="required">Alcohol Consumption</legend>
+                                <div class="radio-options">
+                                    <div class="radio-option">
+                                        <input type="radio" id="alcohol-never" name="alcohol" value="never" required>
+                                        <label for="alcohol-never">Never</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="alcohol-rarely" name="alcohol" value="rarely" required>
+                                        <label for="alcohol-rarely">Rarely (few times a year)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="alcohol-moderate" name="alcohol" value="moderate" required>
+                                        <label for="alcohol-moderate">Moderate (1-2 drinks per week)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="alcohol-regular" name="alcohol" value="regular" required>
+                                        <label for="alcohol-regular">Regular (3+ drinks per week)</label>
+                                    </div>
+                                </div>
+                                <div id="alcohol-error" class="error-message" role="alert" aria-live="polite"></div>
+                            </fieldset>
+                        </div>
+                    </fieldset>
+
+                    <!-- Medical Conditions Section -->
+                    <fieldset class="form-section">
+                        <legend>Medical Conditions</legend>
+                        <p class="section-description">
+                            Please select any conditions that apply to you. This information helps us understand health patterns.
+                        </p>
+
+                        <div class="form-group">
+                            <fieldset class="checkbox-group">
+                                <legend>Current or Past Medical Conditions</legend>
+                                <div class="checkbox-options">
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-diabetes" name="medicalConditions" value="diabetes">
+                                        <label for="condition-diabetes">Diabetes</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-hypertension" name="medicalConditions" value="hypertension">
+                                        <label for="condition-hypertension">High Blood Pressure</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-heart" name="medicalConditions" value="heart-disease">
+                                        <label for="condition-heart">Heart Disease</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-asthma" name="medicalConditions" value="asthma">
+                                        <label for="condition-asthma">Asthma</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-arthritis" name="medicalConditions" value="arthritis">
+                                        <label for="condition-arthritis">Arthritis</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-depression" name="medicalConditions" value="depression">
+                                        <label for="condition-depression">Depression</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-anxiety" name="medicalConditions" value="anxiety">
+                                        <label for="condition-anxiety">Anxiety</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-obesity" name="medicalConditions" value="obesity">
+                                        <label for="condition-obesity">Obesity</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="condition-none" name="medicalConditions" value="none">
+                                        <label for="condition-none">None of the above</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <div class="form-group">
+                            <fieldset class="radio-group">
+                                <legend class="required">Overall Health Rating</legend>
+                                <div class="radio-options">
+                                    <div class="radio-option">
+                                        <input type="radio" id="health-excellent" name="overallHealth" value="excellent" required>
+                                        <label for="health-excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="health-good" name="overallHealth" value="good" required>
+                                        <label for="health-good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="health-fair" name="overallHealth" value="fair" required>
+                                        <label for="health-fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="health-poor" name="overallHealth" value="poor" required>
+                                        <label for="health-poor">Poor</label>
+                                    </div>
+                                </div>
+                                <div id="overall-health-error" class="error-message" role="alert" aria-live="polite"></div>
+                            </fieldset>
+                        </div>
+                    </fieldset>
+
+                    <!-- Additional Information Section -->
+                    <fieldset class="form-section">
+                        <legend>Additional Information</legend>
+
+                        <div class="form-group">
+                            <label for="additional-comments">Additional Comments (Optional)</label>
+                            <textarea id="additional-comments" name="additionalComments" 
+                                      rows="4" maxlength="500"
+                                      placeholder="Any additional health-related information you'd like to share..."
+                                      aria-describedby="comments-help"></textarea>
+                            <div id="comments-help" class="help-text">Maximum 500 characters</div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Submit Health Information</span>
+                            <span class="btn-loading" aria-hidden="true">Submitting...</span>
+                        </button>
+                        <button type="reset" class="btn btn-secondary">Clear Form</button>
+                        <a href="dashboard.html" class="btn btn-link">View Dashboard</a>
+                    </div>
+
+                    <!-- Form Status Messages -->
+                    <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer role="contentinfo">
+        <div class="container">
+            <p>&copy; 2024 Health Feedback Form. This is an anonymous survey for research purposes.</p>
+            <p>
+                <a href="#privacy-policy" class="footer-link">Privacy Policy</a> | 
+                <a href="#data-usage" class="footer-link">Data Usage</a> | 
+                <a href="dashboard.html" class="footer-link">View Results</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-policy" class="modal" role="dialog" aria-labelledby="privacy-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="privacy-title">Privacy Policy</h3>
+                <button type="button" class="modal-close" aria-label="Close privacy policy">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>This health feedback form collects anonymous health information for research and statistical analysis purposes.</p>
+                <ul>
+                    <li>No personally identifiable information is collected</li>
+                    <li>All responses are stored locally in your browser</li>
+                    <li>Data is used only for demographic trend analysis</li>
+                    <li>You can clear your data at any time</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Usage Modal -->
+    <div id="data-usage" class="modal" role="dialog" aria-labelledby="data-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="data-title">Data Usage</h3>
+                <button type="button" class="modal-close" aria-label="Close data usage information">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Your health information is used to:</p>
+                <ul>
+                    <li>Generate demographic health trend statistics</li>
+                    <li>Create visualizations showing health patterns by age, gender, and location</li>
+                    <li>Identify areas where health education might be beneficial</li>
+                    <li>Support public health research initiatives</li>
+                </ul>
+                <p>All data is aggregated and anonymized before analysis.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
